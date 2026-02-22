@@ -211,12 +211,54 @@
 # for day in range(1, 8):
 #     if not nick.live(day):
 #         break
+# Если библиотека не установлена, раскомментируй строку ниже
+# pip install colorama
 
-import time
+import colorama
+import inspect
+from colorama import init, Fore, Back, Style
 
-def measure_time(func, *args, **kwargs):
-    start_time = time.time()
-    result = func(*args, **kwargs)
-    end_time = time.time()
-    execution_time = end_time - start_time
-    return execution_time, result
+init(autoreset=True)
+
+print("=" * 50)
+print("ИНТРОСПЕКЦИЯ БИБЛИОТЕКИ COLORAMA")
+print("=" * 50)
+
+
+print("\nДокументация модуля:")
+print(colorama.__doc__)
+
+print("\nОсновные атрибуты colorama:")
+print(dir(colorama))
+
+print("\nИнформация о Fore:")
+print(dir(Fore))
+
+print("\nИнформация о Back:")
+print(dir(Back))
+
+print("\nИнформация о Style:")
+print(dir(Style))
+
+print("\n" + "=" * 50)
+print("ДЕМОНСТРАЦИЯ РАБОТЫ")
+print("=" * 50)
+
+
+print(Fore.RED + "Красный текст")
+print(Fore.GREEN + "Зелёный текст")
+print(Fore.BLUE + "Синий текст")
+print(Fore.YELLOW + "Жёлтый текст")
+
+
+print(Back.CYAN + "Текст с голубым фоном")
+print(Back.MAGENTA + "Текст с фиолетовым фоном")
+
+
+print(Style.BRIGHT + "Яркий текст")
+print(Style.DIM + "Тусклый текст")
+print(Style.NORMAL + "Обычный текст")
+
+print(Style.RESET_ALL + "Сброс стилей")
+
+print("\nПрограмма завершена успешно!")

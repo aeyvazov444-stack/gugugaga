@@ -262,53 +262,70 @@
 # print(Style.RESET_ALL + "Сброс стилей")
 #
 # print("\nПрограмма завершена успешно!")
-
-import sqlite3
+#
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
-import time
+import tkinter as tk
+from tkinter import messagebox
 
-DB_NAME = "weather.db"
-CITY_URL = "https://wttr.in/Baku?format=j1"
 
-def create_db():
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS weather (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date_time TEXT,
-            temperature REAL
-        )
-    """)
-    conn.commit()
-    conn.close()
+class CurrencyConverter:
+    def __init__(self):
+        self.usd_rate = self.get_usd_rate()
 
-def get_temperature():
-    response = requests.get(CITY_URL)
-    data = response.json()
-    temp = data["current_condition"][0]["temp_C"]
-    return float(temp)
+    def get_usd_rate(self):
+        url = "https://www.cbar.az/currencies"
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-def insert_data(temp):
-    conn = sqlite3.connect(DB_NAME)
-    cursor = conn.cursor()
-    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    cursor.execute("INSERT INTO weather (date_time, temperature) VALUES (?, ?)", (now, temp))
-    conn.commit()
-    conn.close()
+        table = soup.find("table")
+        rows = table.find_all("tr")
 
-def main():
-    create_db()
-    while True:
+        for row in rows:
+            cols = row.find_all("td")
+            if len(cols) > 0 and "USD" in cols[0].text:
+                return float(cols[2].text.replace(",", "."))
+
+    def convert_to_usd(self, amount):
+        return amount / self.usd_rate
+
+
+def console_mode():
+    converter = CurrencyConverter()
+    amount = float(input("Введите сумму в манатах: "))
+    result = converter.convert_to_usd(amount)
+    print(f"Сумма в долларах США: {round(result, 2)}")
+
+
+def gui_mode():
+    converter = CurrencyConverter()
+
+    def convert():
         try:
-            temperature = get_temperature()
-            insert_data(temperature)
-            print(f"Добавлено: {temperature} °C")
-        except Exception as e:
-            print("Ошибка:", e)
-        time.sleep(1800)
+            amount = float(entry.get())
+            result = converter.convert_to_usd(amount)
+            result_label.config(text=f"{round(result, 2)} USD")
+        except:
+            messagebox.showerror("Ошибка", "Введите корректное число")
+
+    root = tk.Tk()
+    root.title("Конвертер валют")
+
+    tk.Label(root, text="Введите сумму в манатах:").pack(pady=5)
+    entry = tk.Entry(root)
+    entry.pack(pady=5)
+
+    tk.Button(root, text="Конвертировать", command=convert).pack(pady=5)
+    result_label = tk.Label(root, text="")
+    result_label.pack(pady=5)
+
+    root.mainloop()
+
 
 if __name__ == "__main__":
-    main()
+    mode = input("Выберите режим (1 - консоль, 2 - GUI): ")
+
+    if mode == "1":
+        console_mode()
+    else:
+        gui_mode()
